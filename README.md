@@ -27,4 +27,4 @@ protocol buffers & language interpolability
 
 ```proto
 syntax = "proto3"
-```proto
+```
