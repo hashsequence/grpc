@@ -25,6 +25,6 @@ the function directly on the server
 protocol buffers & language interpolability
 ------------------------------------------
 
-'''proto
+```proto
 syntax = "proto3"
-'''proto
+```proto
