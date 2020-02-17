@@ -431,25 +431,25 @@ func (*server) Greet(ctx context.Context, req *greetpb.GreetRequest) (*greetpb.G
 
  ```go
 \\in main
-	c:= calculatorpb.NewCalculatorServiceClient(cc)
+	c:= greetpb.NewGreetServiceClient(cc)
 
 
-func doUnary(c calculatorpb.CalculatorServiceClient) {
-	fmt.Println("Starting unary rpc adding 7 and -34")
-	req := &calculatorpb.SumRequest{
-		Sum : &calculatorpb.Sum {
-			X : 7,
-			Y : -34,
+func doUnary(c greetpb.GreetServiceClient) {
+	fmt.Println("Starting unary rpc")
+	req := &greetpb.GreetRequest{
+		Greeting : &greetpb.Greeting {
+			FirstName : "Stephanie",
+			LastName : "Wong",
 		},
 	}
 	//fmt.Printf("Created client %f", c)
 
-	res, err := c.Sum(context.Background(), req)
+	res, err := c.Greet(context.Background(), req)
 
 	if err != nil {
-		log.Fatalf("error while calling calculatorpb's Sum RPC: %v", err)
+		log.Fatalf("error while calling Greet RPC: %v", err)
 	}
-	log.Printf("Response from Sum %d", res.Result)
+	log.Printf("Response from Greet %v", res.Result)
 }
 
  ```
