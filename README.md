@@ -212,8 +212,10 @@ we get greet.pb.go
 package greetpb
 
 import (
+	context "context"
 	fmt "fmt"
 	proto "github.com/golang/protobuf/proto"
+	grpc "google.golang.org/grpc"
 	math "math"
 )
 
@@ -239,6 +241,49 @@ var fileDescriptor_32c0044392f32579 = []byte{
 	0x00, 0x00, 0x00,
 }
 
+// Reference imports to suppress errors if they are not otherwise used.
+var _ context.Context
+var _ grpc.ClientConnInterface
+
+// This is a compile-time assertion to ensure that this generated file
+// is compatible with the grpc package it is being compiled against.
+const _ = grpc.SupportPackageIsVersion6
+
+// GreetServiceClient is the client API for GreetService service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
+type GreetServiceClient interface {
+}
+
+type greetServiceClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewGreetServiceClient(cc grpc.ClientConnInterface) GreetServiceClient {
+	return &greetServiceClient{cc}
+}
+
+// GreetServiceServer is the server API for GreetService service.
+type GreetServiceServer interface {
+}
+
+// UnimplementedGreetServiceServer can be embedded to have forward compatible implementations.
+type UnimplementedGreetServiceServer struct {
+}
+
+func RegisterGreetServiceServer(s *grpc.Server, srv GreetServiceServer) {
+	s.RegisterService(&_GreetService_serviceDesc, srv)
+}
+
+var _GreetService_serviceDesc = grpc.ServiceDesc{
+	ServiceName: "greet.GreetService",
+	HandlerType: (*GreetServiceServer)(nil),
+	Methods:     []grpc.MethodDesc{},
+	Streams:     []grpc.StreamDesc{},
+	Metadata:    "greet.proto",
+}
+
+
 ```
 
 installing protoc on ubuntu:
@@ -255,4 +300,66 @@ sudo mv protoc3/include/* /usr/local/include/
 # Optional: change owner
 sudo chown [user] /usr/local/bin/protoc
 sudo chown -R [user] /usr/local/include/google
+```
+
+ch.17 boilerplate server
+------------------------------------------
+
+```go
+package main
+
+import (
+	"log"
+	"net"
+	"fmt"
+	"../greetpb"
+	"google.golang.org/grpc"
+)
+
+type server struct {}
+
+func main() {
+	fmt.Println("Hello World")
+
+	lis, err := net.Listen("tcp", "0.0.0.0:50051")
+	if err != nil {
+		log.Fatalf("Failed to listen: %v", err)
+	}
+
+	s := grpc.NewServer()
+
+	greetpb.RegisterGreetServiceServer(s, &server{})
+	
+	if err := s.Serve(lis); err != nil {
+		log.Fatalf("failed to serve: %v", err)
+	}
+		
+}
+```
+
+ch.18 boilerplate client
+-----------------------------------------
+
+```go
+package main
+
+import (
+	"fmt"
+	"log"
+	"google.golang.org/grpc"
+	"../greetpb"
+)
+
+func main() {
+	fmt.Println("Hello I'm the client")
+	cc, err := grpc.Dial("localhost:50051", grpc.WithInsecure())
+	if err != nil {
+		log.Fatalf("could not connect: %v", err)
+	}
+
+	defer cc.Close()
+	
+	c:= greetpb.NewGreetServiceClient(cc)
+	fmt.Printf("Created client %f", c)
+}
 ```
