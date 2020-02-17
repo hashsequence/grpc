@@ -302,7 +302,7 @@ sudo chown [user] /usr/local/bin/protoc
 sudo chown -R [user] /usr/local/include/google
 ```
 
-ch.17 boilerplate server
+17 boilerplate server
 ------------------------------------------
 
 ```go
@@ -337,7 +337,7 @@ func main() {
 }
 ```
 
-ch.18 boilerplate client
+18 boilerplate client
 -----------------------------------------
 
 ```go
@@ -364,7 +364,7 @@ func main() {
 }
 ```
 
-ch.19 unary api
+19 unary api
 -------------------------------------------
 
 basically the type of apis that everyone is familar with 
@@ -405,7 +405,7 @@ service GreetService{
 
 ```
 
-ch.21 unary api server implementation
+21 unary api server implementation
 ------------------------------------------------
 
 
@@ -426,7 +426,7 @@ func (*server) Greet(ctx context.Context, req *greetpb.GreetRequest) (*greetpb.G
 
 ```
 
- ch.22 unary api client implementation
+ 22 unary api client implementation
  -----------------------------------------
 
  ```go
