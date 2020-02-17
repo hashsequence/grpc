@@ -363,3 +363,93 @@ func main() {
 	fmt.Printf("Created client %f", c)
 }
 ```
+
+ch.19 unary api
+-------------------------------------------
+
+basically the type of apis that everyone is familar with 
+
+client will send one message and then server will respond 
+
+in grpc unary calls are defined using protocol buffers
+
+for each rpc call we have to define a request message and a response message
+
+new proto file
+
+```proto
+syntax = "proto3";
+
+package greet;
+option go_package="greetpb";
+
+
+message Greeting {
+    string first_name = 1;
+    string last_name = 2;
+}
+
+message GreetRequest {
+    Greeting greeting = 1;
+}
+
+message GreetResponse {
+    string result =1;
+}
+
+service GreetService{
+    //unary
+    rpc Greet(GreetRequest) returns (GreetResponse) {};
+}
+
+
+```
+
+ch.21 unary api server implementation
+------------------------------------------------
+
+
+```go
+
+func (*server) Greet(ctx context.Context, req *greetpb.GreetRequest) (*greetpb.GreetResponse, error) {
+	//this is how we get information from request
+	firstname := req.GetGreeting().GetFirstName()
+
+	result := "Hello " + firstname
+
+	res := &greetpb.GreetResponse{
+		Result : result,
+	}
+
+	return res, nil
+}
+
+```
+
+ ch.22 unary api client implementation
+ -----------------------------------------
+
+ ```go
+\\in main
+	c:= calculatorpb.NewCalculatorServiceClient(cc)
+
+
+func doUnary(c calculatorpb.CalculatorServiceClient) {
+	fmt.Println("Starting unary rpc adding 7 and -34")
+	req := &calculatorpb.SumRequest{
+		Sum : &calculatorpb.Sum {
+			X : 7,
+			Y : -34,
+		},
+	}
+	//fmt.Printf("Created client %f", c)
+
+	res, err := c.Sum(context.Background(), req)
+
+	if err != nil {
+		log.Fatalf("error while calling calculatorpb's Sum RPC: %v", err)
+	}
+	log.Printf("Response from Sum %d", res.Result)
+}
+
+ ```

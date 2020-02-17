@@ -5,19 +5,20 @@ import (
 	"log"
 	"net"
 	"fmt"
-	greetpb "../greetpb"
+	calculatorpb "../calculatorpb"
 	"google.golang.org/grpc"
 )
 
 type server struct {}
 
-func (*server) Greet(ctx context.Context, req *greetpb.GreetRequest) (*greetpb.GreetResponse, error) {
+func (*server) Sum(ctx context.Context, req *calculatorpb.SumRequest) (*calculatorpb.SumResponse, error) {
 	//this is how we get information from request
-	firstname := req.GetGreeting().GetFirstName()
+	x := req.GetSum().GetX()
+	y := req.GetSum().GetY()
 
-	result := "Hello " + firstname
+	result := x + y
 
-	res := &greetpb.GreetResponse{
+	res := &calculatorpb.SumResponse{
 		Result : result,
 	}
 
@@ -25,7 +26,7 @@ func (*server) Greet(ctx context.Context, req *greetpb.GreetRequest) (*greetpb.G
 }
 
 func main() {
-	fmt.Println("Hello World")
+	fmt.Println("Calculator")
 
 	lis, err := net.Listen("tcp", "0.0.0.0:50051")
 	if err != nil {
@@ -34,7 +35,7 @@ func main() {
 
 	s := grpc.NewServer()
 
-	greetpb.RegisterGreetServiceServer(s, &server{})
+	calculatorpb.RegisterCalculatorServiceServer(s, &server{})
 	
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
