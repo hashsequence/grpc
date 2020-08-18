@@ -922,3 +922,158 @@ func doUnary(c calculatorpb.CalculatorServiceClient) {
 }
 
 ```
+
+# Grpc Server Streaming
+
+## What is a Server Streaming API?
+
+* Server Streaming RPC API are a NEW kind API enabled thanks to HTTP/2 
+
+* The client will send one message to the server and will recieve many responses from the server, possibly an infinite number
+
+* Streaming Server are well suited for
+	* when the server needs to send a lot of data (big data)
+
+	* When the server needs to "push" data to the client without the client requesting for more (live feed, chat, etc)
+
+* in gRPC Server Streaming Calls are defined using the keyword "stream"
+
+* As for each RPC call we have to define a "Request" message and a "Response" message 
+
+example:
+
+```proto
+message GreetManyTimesRequest {
+	Greeting greeting = 1;
+}
+
+message GreetManyTimesResponse {
+	string result = 1;
+
+}
+
+service GreetService {
+	//Streaming Server 
+	rpc GreetManyTimes(GreetManyTimesRequest) returns (stream GreetManyTimesResponse) {};
+}
+```
+
+
+## What GreetManyTimes API Definition:
+
+* It will take ONE GreetManyTimesRequest that contains a 
+greeting 
+
+* It will return MANY GreetManyTimesResponse that contains a result string
+
+
+adding this in greet.proto
+
+
+```proto
+
+
+message GreetManytimesResponse {
+	string result = 1;
+}
+
+service GreetService {
+	//unary
+    rpc Greet(GreetRequest) returns (GreetResponse) {};
+
+	//server streaming
+	rpc GreeManyTimes(GreetManyTimeRequest) returns(stream GreetManyTimesResponse) {};
+}
+
+
+```
+
+now run 
+
+```sh
+protoc greet/greetpb/greet.proto --go_out=plugins=grpc:.
+
+```
+
+and if you look in the greet.pb.go we have :
+
+```go
+type GreetServiceClient interface {
+	// unary
+	Greet(ctx context.Context, in *GreetRequest, opts ...grpc.CallOption) (*GreetResponse, error)
+	//server streaming
+	GreeTManyTimes(ctx context.Context, in *GreetManyTimesRequest, opts ...grpc.CallOption) (GreetService_GreetManyTimesClient, error)
+}
+```
+
+now we must implement GreetManyTimes
+
+
+
+## Server Streaming API Server Implementation
+
+server.go
+```go
+func (*server) GreetManyTimes(req *greetpb.GreetManytimesRequest, stream greetpb.GreetService_GreetManyTimesServer ) error {
+	fmt.Printf("GreetManyTimes has been invoked")
+	firstName := req.GetGreeting().GetFirstName()
+	for i := 0; i < 10; i++ {
+		result := "Hello " + firstName + " number " + strconv.Itoa(i)
+		res := &greetpb.GreetManytimesResponse {
+			Result: result,
+		}
+	
+	stream.Send(res)
+	time.Sleep(1000 * time.Millisecond)
+	}
+	return nil
+}
+```
+
+## Client Streaming API Client Implementation
+
+in greet_client.go:
+
+```go
+func doServerStreaming(c greetpb.GreetServiceClient) {
+	fmt.Println("Starting server streaming rpc")
+	req := &greetpb.GreetManytimesRequest {
+		Greeting: &greetpb.Greeting {
+			FirstName : "Avery",
+			LastName : "Wong",
+		},
+	}
+	resStream, err := c.GreetManyTimes(context.Background(), req)
+	if err != nil {
+		log.Fatalf("error while calling GreetManyTimes RPC: %v", err)
+	}
+	for {
+		msg, err := resStream.Recv()
+		if err == io.EOF {
+			//we reach end of stream
+			break
+		}
+		if err != nil {
+			log.Fatalf("error while reading stream %v", err)
+		}
+		log.Printf("Response from GreetManyTimes: %v", msg.GetResult())
+	}
+}
+```
+
+now run on terminal to run client:
+
+```sh
+$ go run greet/greet_client/greet_client.go
+Hello I'm the client
+Starting server streaming rpc
+2020/08/18 00:14:32 Response from GreetManyTimes: Hello Avery number 0
+2020/08/18 00:14:33 Response from GreetManyTimes: Hello Avery number 1
+2020/08/18 00:14:34 Response from GreetManyTimes: Hello Avery number 2
+2020/08/18 00:14:35 Response from GreetManyTimes: Hello Avery number 3
+2020/08/18 00:14:36 Response from GreetManyTimes: Hello Avery number 4
+2020/08/18 00:14:37 Response from GreetManyTimes: Hello Avery number 5
+2020/08/18 00:14:38 Response from GreetManyTimes: Hello Avery number 6
+^Csignal: interrupt
+
+```
