@@ -22,7 +22,8 @@ func main() {
 	c:= greetpb.NewGreetServiceClient(cc)
 	//doUnary(c)
 	//doServerStreaming(c)
-	doClientStreaming(c)
+	//doClientStreaming(c)
+	doBiDiStreaming(c)
 	
 }
 
@@ -114,4 +115,70 @@ func doClientStreaming(c greetpb.GreetServiceClient) {
 		log.Fatalf("error while recieving response from LongGreet &v", err)
 	}
 	fmt.Printf("LongGreet Response: %v\n",res) 
+}
+
+func doBiDiStreaming(c greetpb.GreetServiceClient) {
+	fmt.Println("starting BiDi Streaming RPC")
+	stream, err := c.GreetEveryone(context.Background()) 
+	if err != nil {
+		log.Fatalf("error while calling GreetEveryone RPC: %v", err)
+		return
+	}
+
+	requests := []*greetpb.GreetEveryoneRequest{
+		&greetpb.GreetEveryoneRequest {
+			Greeting: &greetpb.Greeting {
+				FirstName : "Avery",
+				LastName : "Wong",
+			},
+		},
+		&greetpb.GreetEveryoneRequest {
+			Greeting: &greetpb.Greeting {
+				FirstName : "dan",
+				LastName : "Wan",
+			},
+		},
+		&greetpb.GreetEveryoneRequest {
+			Greeting: &greetpb.Greeting {
+				FirstName : "max",
+				LastName : "Lee",
+			},
+		},
+		&greetpb.GreetEveryoneRequest {
+			Greeting: &greetpb.Greeting {
+				FirstName : "Bane",
+				LastName : "Anderson",
+			},
+		},
+	}
+
+	waitc := make(chan struct{})
+	go func() {
+		//send a bunch of messages
+		for _, req := range requests {
+		fmt.Println("Sending req %v", req)
+		stream.Send(req)
+		time.Sleep(100 * time.Millisecond)
+		}
+		stream.CloseSend()
+	}()
+
+	go func() {
+		
+		for {
+			res, err := stream.Recv()
+			if err == io.EOF {
+				break;
+			}
+			if err != nil {
+				log.Fatalf("error while recieving %v", err)
+				break;
+			}
+			fmt.Println("Recieved " + res.GetResult())
+		}
+		close(waitc)
+	}()
+
+	<-waitc
+
 }

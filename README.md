@@ -1199,3 +1199,145 @@ func doClientStreaming(c greetpb.GreetServiceClient) {
 	fmt.Printf("LongGreet Response: %v\n",res) 
 }
 ```
+
+## Bi Directional Streaming API ?
+
+* The client will send many message to the server
+and will recieve many responses from the server
+
+* the number of requests and responses dones not have to match
+
+* bi directional streaming rpc are well suited for
+	* when the client and server need to send a lot of data asynchronously
+	* chat protocol
+	* long running connections
+
+* use stream keyword in proto for respons and request in the rpc service definition
+proto:
+```proto
+message GreetEveryoneRequest {
+    Greeting greeting = 1;
+}
+
+message GreetEveryoneResponse {
+    string result = 1;
+}
+
+
+service GreetService {
+	// unary
+    rpc Greet(GreetRequest) returns (GreetResponse) {};
+
+	//server streaming
+	rpc GreetManyTimes(GreetManytimesRequest) returns(stream GreetManytimesResponse) {};
+
+    // Client Streaming
+    rpc LongGreet(stream LongGreetRequest) returns (LongGreetResponse) {};
+
+    //BiDi Streaming
+    rpc GreetEveryone(stream GreetEveryoneRequest) returns (stream GreetEveryoneResponse) {};
+}
+
+
+
+
+
+```
+
+server:
+```go
+func (*server) GreetEveryone(stream greetpb.GreetService_GreetEveryoneServer) error {
+	fmt.Printf("GreetEveryone function has invoked with a streaming request\n")
+	
+	for {
+		req, err := stream.Recv()
+		if err == io.EOF {
+			return nil
+		}
+
+		if err != nil {
+			log.Fatalf("Error while reading client stream %v", err)
+			return err
+		}
+		firstName := req.GetGreeting().GetFirstName()
+		result := "Hello " + firstName + "! "
+		senderErr := stream.Send(&greetpb.GreetEveryoneResponse {
+			Result: result,
+		})
+		if senderErr != nil {
+			log.Fatalf("Error while sending data to cclient: %v\n", err)
+			return err
+		}
+	}
+}
+```
+
+ client:
+(noticed we used go routines to run concurrent functions)
+ ```go
+func doBiDiStreaming(c greetpb.GreetServiceClient) {
+	fmt.Println("starting BiDi Streaming RPC")
+	stream, err := c.GreetEveryone(context.Background()) 
+	if err != nil {
+		log.Fatalf("error while calling GreetEveryone RPC: %v", err)
+		return
+	}
+
+	requests := []*greetpb.GreetEveryoneRequest{
+		&greetpb.GreetEveryoneRequest {
+			Greeting: &greetpb.Greeting {
+				FirstName : "Avery",
+				LastName : "Wong",
+			},
+		},
+		&greetpb.GreetEveryoneRequest {
+			Greeting: &greetpb.Greeting {
+				FirstName : "dan",
+				LastName : "Wan",
+			},
+		},
+		&greetpb.GreetEveryoneRequest {
+			Greeting: &greetpb.Greeting {
+				FirstName : "max",
+				LastName : "Lee",
+			},
+		},
+		&greetpb.GreetEveryoneRequest {
+			Greeting: &greetpb.Greeting {
+				FirstName : "Bane",
+				LastName : "Anderson",
+			},
+		},
+	}
+
+	waitc := make(chan struct{})
+	go func() {
+		//send a bunch of messages
+		for _, req := range requests {
+		fmt.Println("Sending req %v", req)
+		stream.Send(req)
+		time.Sleep(100 * time.Millisecond)
+		}
+		stream.CloseSend()
+	}()
+
+	go func() {
+		
+		for {
+			res, err := stream.Recv()
+			if err == io.EOF {
+				break;
+			}
+			if err != nil {
+				log.Fatalf("error while recieving %v", err)
+				break;
+			}
+			fmt.Println("Recieved " + res.GetResult())
+		}
+		close(waitc)
+	}()
+
+	<-waitc
+
+}
+ ```

@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package findMax;
+option go_package="findMax";
+
+message FindMaxResponse {
+    int32 max = 1;
+}
+
+message FindMaxRequest {
+    int32 val = 1;
+}
+
+service FindMaxService {
+    rpc ComputeMax(stream FindMaxRequest) returns( stream FindMaxResponse) {};
+}
