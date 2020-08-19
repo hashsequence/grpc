@@ -1077,3 +1077,125 @@ Starting server streaming rpc
 ^Csignal: interrupt
 
 ```
+
+# gRPC client streaming
+
+## What is a client streaming api?
+
+* the client will send many message, and the server
+will send back one response
+
+* streaming client are well suited for 
+	* when the client needs to send a lot of data
+	* when the server processing is expensive and should happen as the client sends data
+
+
+* In gRPC Client Streaming Calls are defined using keyword "stream"
+
+Lets implement a LongGreet API
+
+* It will take many longGreetRequest
+
+* It will return one LongGreetResponse that contains 
+a result string
+
+lets modify the greet.proto
+
+```proto
+
+message LongGreetRequest {
+    Greeting greeting = 1;
+}
+
+message LongGreetResponse {
+    string result = 1;
+}
+
+
+service GreetService {
+	// unary
+    rpc Greet(GreetRequest) returns (GreetResponse) {};
+
+	//server streaming
+	rpc GreetManyTimes(GreetManytimesRequest) returns(stream GreetManytimesResponse) {};
+
+    // Client Streaming
+    rpc LongGreet(stream LongGreetRequest) returns (LongGreetResponse) {}
+}
+
+```
+
+now the server code:
+
+```go
+func (*server) LongGreet(stream greetpb.GreetService_LongGreetServer) error {
+	fmt.Printf("LongGreet has been invoked\n")
+	result := ""
+	for {
+		req, err := stream.Recv()
+		if err == io.EOF {
+			fmt.Printf("Sending %v\n", result)
+			return stream.SendAndClose(&greetpb.LongGreetResponse {
+				Result : result,
+			})
+		}
+
+		if err != nil {
+			log.Fatalf("Error while reading client stream %v", err)
+		}
+		firstName := req.GetGreeting().GetFirstName()
+		result += "Hello " + firstName + "! "
+	}
+}
+```
+
+and lastly the client:
+
+```go
+func doClientStreaming(c greetpb.GreetServiceClient) {
+	fmt.Println("Starting client streaming rpc")
+
+	requests := []*greetpb.LongGreetRequest{
+		&greetpb.LongGreetRequest {
+			Greeting: &greetpb.Greeting {
+				FirstName : "Avery",
+				LastName : "Wong",
+			},
+		},
+		&greetpb.LongGreetRequest {
+			Greeting: &greetpb.Greeting {
+				FirstName : "dan",
+				LastName : "Wan",
+			},
+		},
+		&greetpb.LongGreetRequest {
+			Greeting: &greetpb.Greeting {
+				FirstName : "max",
+				LastName : "Lee",
+			},
+		},
+		&greetpb.LongGreetRequest {
+			Greeting: &greetpb.Greeting {
+				FirstName : "Bane",
+				LastName : "Anderson",
+			},
+		},
+	}
+	stream, err := c.LongGreet(context.Background()) 
+	if err != nil {
+		log.Fatalf("error while calling LongGreet RPC: %v", err)
+	}
+
+	for _, req := range requests {
+		fmt.Println("Sending req %v", req)
+		stream.Send(req)
+		time.Sleep(100 * time.Millisecond)
+	}
+
+	res, err := stream.CloseAndRecv()
+	if err != nil {
+		log.Fatalf("error while recieving response from LongGreet &v", err)
+	}
+	fmt.Printf("LongGreet Response: %v\n",res) 
+}
+```
