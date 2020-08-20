@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"log"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	calculatorpb "../calculatorpb"
 )
 
@@ -18,7 +20,8 @@ func main() {
 	defer cc.Close()
 	
 	c:= calculatorpb.NewCalculatorServiceClient(cc)
-	doUnary(c)
+	//doUnary(c)
+	doErrorUnary(c)
 	
 }
 
@@ -38,4 +41,31 @@ func doUnary(c calculatorpb.CalculatorServiceClient) {
 		log.Fatalf("error while calling calculatorpb's Sum RPC: %v", err)
 	}
 	log.Printf("Response from Sum %d", res.Result)
+}
+
+func doErrorUnary(c calculatorpb.CalculatorServiceClient) {
+	fmt.Println("calling Squareroot")
+	num := int32(-7)
+	req := &calculatorpb.SquareRootRequest{
+		Number : num,
+	}
+	//fmt.Printf("Created client %f", c)
+
+	res, err := c.SquareRoot(context.Background(), req)
+
+	if err != nil {
+		respErr, ok := status.FromError(err)
+		if ok {
+			fmt.Println(respErr.Message())
+			fmt.Println(respErr.Code())
+			if respErr.Code() == codes.InvalidArgument {
+				fmt.Println("negative number!")
+			}
+		} else {
+			log.Fatalf("Error calling SquareRoot: %v", err)
+		}
+	} else {
+		log.Printf("Response from SquareRoot of %v: %v",num, res.GetNumberRoot())
+	}
+	
 }

@@ -1341,3 +1341,134 @@ func doBiDiStreaming(c greetpb.GreetServiceClient) {
 
 }
  ```
+
+ ## gRPC error codes
+
+ * there are a few error codes unlike http
+
+ * https://grpc.io/docs/guides/error.html
+
+ * avi.im/grpc-errors
+
+ * it can use metadata context to return extra info for error
+
+example use of grpb error pacakges:
+
+server:
+```go
+func (*server) SquareRoot(c context.Context, req *calculatorpb.SquareRootRequest) (*calculatorpb.SquareRootResponse, error) {
+	fmt.Println("Recieved SquareRoot RPC")
+	number := req.GetNumber()
+	if number < 0 {
+		return nil, status.Errorf(
+			codes.InvalidArgument,
+			fmt.Sprintf("Recieved a negative number: %v", number),
+		)
+	}
+	return &calculatorpb.SquareRootResponse{
+		NumberRoot : math.Sqrt(float64(number)),
+	}, nil
+}
+```
+
+client:
+```go
+unc doErrorUnary(c calculatorpb.CalculatorServiceClient) {
+	fmt.Println("calling Squareroot")
+	num := int32(-7)
+	req := &calculatorpb.SquareRootRequest{
+		Number : num,
+	}
+	//fmt.Printf("Created client %f", c)
+
+	res, err := c.SquareRoot(context.Background(), req)
+
+	if err != nil {
+		respErr, ok := status.FromError(err)
+		if ok {
+			fmt.Println(respErr.Message())
+			fmt.Println(respErr.Code())
+			if respErr.Code() == codes.InvalidArgument {
+				fmt.Println("negative number!")
+			}
+		} else {
+			log.Fatalf("Error calling SquareRoot: %v", err)
+		}
+	} else {
+		log.Printf("Response from SquareRoot of %v: %v",num, res.GetNumberRoot())
+	}
+	
+}
+```
+
+## Deadlines
+
+* Deadlines allow gRPC clients to specify how long they are willing to wait for an RPC to complete before the rpc is terminated with the error 
+DEADLINE_EXCEEDED
+
+* grpc doc reccommends to set a deadline
+
+* server should check if the deadline has exceeded	
+
+* https://grpc.io/blog/deadlines
+
+* Deadlines are chained so if A calls B and B calls C ,then B and C knows the deadlines
+
+example:
+
+
+server:
+
+```go
+func (*server) GreetWithDeadline(ctx context.Context, req *greetpb.GreetWithDeadlineRequest) (*greetpb.GreetWithDeadlineResponse, error) {
+	fmt.Printf("GreetWithDeadline invoked\n")
+	for i := 0; i < 3; i++ {
+		if ctx.Err() == context.Canceled {
+			fmt.Println("The client canceled the request!")
+			return nil, status.Error(codes.Canceled, "the client canceled the request")
+		}
+		time.Sleep(1 * time.Second)
+	}
+	firstname := req.GetGreeting().GetFirstName()
+
+	result := "Hello " + firstname
+
+	res := &greetpb.GreetWithDeadlineResponse{
+		Result : result,
+	}
+
+	return res, nil
+}
+```
+
+client
+
+```go
+func doUnaryDeadline(c greetpb.GreetServiceClient, seconds time.Duration) {
+	
+	req := &greetpb.GreetWithDeadlineRequest{
+		Greeting : &greetpb.Greeting {
+			FirstName : "Stephanie",
+			LastName : "Wong",
+		},
+	}
+	//fmt.Printf("Created client %f", c)
+	ctx, cancel := context.WithTimeout(context.Background(),seconds)
+	defer cancel()
+	res, err := c.GreetWithDeadline(ctx, req)
+
+	if err != nil {
+		statusErr, ok := status.FromError(err)
+		if ok {
+			if statusErr.Code() == codes.DeadlineExceeded {
+				fmt.Println("Timeout was hit! Deadline Exceeded")
+			} else {
+				fmt.Printf("unexpected error: %v", statusErr)
+			}
+		} else {
+				log.Fatalf("error while calling GreetWithDeadline RPC: %v", err)
+		}
+	}
+	log.Printf("Response from GreetWithDeadline %v", res.Result)
+}
+```

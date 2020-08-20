@@ -149,28 +149,112 @@ func (m *SumResponse) GetResult() int32 {
 	return 0
 }
 
+type SquareRootRequest struct {
+	Number               int32    `protobuf:"varint,1,opt,name=number,proto3" json:"number,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *SquareRootRequest) Reset()         { *m = SquareRootRequest{} }
+func (m *SquareRootRequest) String() string { return proto.CompactTextString(m) }
+func (*SquareRootRequest) ProtoMessage()    {}
+func (*SquareRootRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c686ea360062a8cf, []int{3}
+}
+
+func (m *SquareRootRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_SquareRootRequest.Unmarshal(m, b)
+}
+func (m *SquareRootRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_SquareRootRequest.Marshal(b, m, deterministic)
+}
+func (m *SquareRootRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_SquareRootRequest.Merge(m, src)
+}
+func (m *SquareRootRequest) XXX_Size() int {
+	return xxx_messageInfo_SquareRootRequest.Size(m)
+}
+func (m *SquareRootRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_SquareRootRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_SquareRootRequest proto.InternalMessageInfo
+
+func (m *SquareRootRequest) GetNumber() int32 {
+	if m != nil {
+		return m.Number
+	}
+	return 0
+}
+
+type SquareRootResponse struct {
+	NumberRoot           float64  `protobuf:"fixed64,1,opt,name=number_root,json=numberRoot,proto3" json:"number_root,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *SquareRootResponse) Reset()         { *m = SquareRootResponse{} }
+func (m *SquareRootResponse) String() string { return proto.CompactTextString(m) }
+func (*SquareRootResponse) ProtoMessage()    {}
+func (*SquareRootResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c686ea360062a8cf, []int{4}
+}
+
+func (m *SquareRootResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_SquareRootResponse.Unmarshal(m, b)
+}
+func (m *SquareRootResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_SquareRootResponse.Marshal(b, m, deterministic)
+}
+func (m *SquareRootResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_SquareRootResponse.Merge(m, src)
+}
+func (m *SquareRootResponse) XXX_Size() int {
+	return xxx_messageInfo_SquareRootResponse.Size(m)
+}
+func (m *SquareRootResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_SquareRootResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_SquareRootResponse proto.InternalMessageInfo
+
+func (m *SquareRootResponse) GetNumberRoot() float64 {
+	if m != nil {
+		return m.NumberRoot
+	}
+	return 0
+}
+
 func init() {
 	proto.RegisterType((*Sum)(nil), "calculator.Sum")
 	proto.RegisterType((*SumRequest)(nil), "calculator.SumRequest")
 	proto.RegisterType((*SumResponse)(nil), "calculator.SumResponse")
+	proto.RegisterType((*SquareRootRequest)(nil), "calculator.SquareRootRequest")
+	proto.RegisterType((*SquareRootResponse)(nil), "calculator.SquareRootResponse")
 }
 
 func init() { proto.RegisterFile("calculator.proto", fileDescriptor_c686ea360062a8cf) }
 
 var fileDescriptor_c686ea360062a8cf = []byte{
-	// 178 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0x12, 0x48, 0x4e, 0xcc, 0x49,
-	0x2e, 0xcd, 0x49, 0x2c, 0xc9, 0x2f, 0xd2, 0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x17, 0xe2, 0x42, 0x88,
-	0x28, 0x29, 0x72, 0x31, 0x07, 0x97, 0xe6, 0x0a, 0xf1, 0x70, 0x31, 0x56, 0x48, 0x30, 0x2a, 0x30,
-	0x6a, 0xb0, 0x06, 0x31, 0x56, 0x80, 0x78, 0x95, 0x12, 0x4c, 0x10, 0x5e, 0xa5, 0x92, 0x3e, 0x17,
-	0x57, 0x70, 0x69, 0x6e, 0x50, 0x6a, 0x61, 0x69, 0x6a, 0x71, 0x89, 0x90, 0x22, 0x17, 0x73, 0x71,
-	0x69, 0x2e, 0x58, 0x2d, 0xb7, 0x11, 0xbf, 0x1e, 0x92, 0xe1, 0x20, 0x45, 0x20, 0x39, 0x25, 0x55,
-	0x2e, 0x6e, 0xb0, 0x86, 0xe2, 0x82, 0xfc, 0xbc, 0xe2, 0x54, 0x21, 0x31, 0x2e, 0xb6, 0xa2, 0xd4,
-	0xe2, 0xd2, 0x9c, 0x12, 0xa8, 0x05, 0x50, 0x9e, 0x91, 0x2f, 0x97, 0xa0, 0x33, 0x5c, 0x77, 0x70,
-	0x6a, 0x51, 0x59, 0x66, 0x72, 0xaa, 0x90, 0x05, 0xc4, 0x3d, 0x62, 0xe8, 0x06, 0x43, 0x6c, 0x97,
-	0x12, 0xc7, 0x10, 0x87, 0x58, 0xa2, 0xc4, 0xe0, 0xc4, 0x17, 0xc5, 0x83, 0x90, 0x2b, 0x48, 0x4a,
-	0x62, 0x03, 0x7b, 0xd6, 0x18, 0x10, 0x00, 0x00, 0xff, 0xff, 0xe9, 0xf6, 0x95, 0xb9, 0x00, 0x01,
-	0x00, 0x00,
+	// 252 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x74, 0x91, 0x4f, 0x4b, 0xc3, 0x40,
+	0x10, 0xc5, 0x5d, 0x8b, 0x39, 0xbc, 0x14, 0xb5, 0x7b, 0x88, 0xa5, 0xe0, 0x9f, 0x2e, 0x08, 0x82,
+	0x50, 0xa1, 0x22, 0x78, 0xd6, 0xb3, 0x97, 0xe4, 0xe6, 0x45, 0x92, 0xb0, 0x07, 0x21, 0xe9, 0xa6,
+	0xbb, 0x3b, 0xd2, 0x7e, 0x17, 0x3f, 0xac, 0x6c, 0x26, 0x31, 0xb5, 0xd2, 0xe3, 0x9b, 0xf7, 0xdb,
+	0x37, 0x6f, 0x58, 0x9c, 0x97, 0x79, 0x55, 0x52, 0x95, 0x7b, 0x63, 0x17, 0x8d, 0x35, 0xde, 0x48,
+	0x0c, 0x13, 0x35, 0xc7, 0x28, 0xa3, 0x5a, 0x8e, 0x21, 0x36, 0x53, 0x71, 0x23, 0xee, 0x4e, 0x52,
+	0xb1, 0x09, 0x6a, 0x3b, 0x3d, 0x66, 0xb5, 0x55, 0x0f, 0x40, 0x46, 0x75, 0xaa, 0xd7, 0xa4, 0x9d,
+	0x97, 0x73, 0x8c, 0x1c, 0xd5, 0x2d, 0x1b, 0x2f, 0xcf, 0x16, 0x3b, 0xe1, 0x01, 0x0a, 0x9e, 0xba,
+	0x45, 0xdc, 0x3e, 0x70, 0x8d, 0x59, 0x39, 0x2d, 0x13, 0x44, 0x56, 0x3b, 0xaa, 0x7c, 0xb7, 0xa0,
+	0x53, 0xea, 0x1e, 0x93, 0x6c, 0x4d, 0xb9, 0xd5, 0xa9, 0x31, 0xbe, 0x8f, 0x4f, 0x10, 0xad, 0xa8,
+	0x2e, 0xb4, 0xed, 0x61, 0x56, 0xea, 0x09, 0x72, 0x17, 0xee, 0xa2, 0xaf, 0x11, 0xb3, 0xff, 0x61,
+	0x8d, 0xe1, 0x7c, 0x91, 0x82, 0x47, 0x01, 0x5c, 0x7e, 0x0b, 0x4c, 0x5e, 0x7f, 0x2b, 0x66, 0xda,
+	0x7e, 0x7d, 0x96, 0x5a, 0x3e, 0xf3, 0xd1, 0xc9, 0x7e, 0x7b, 0xee, 0x30, 0xbb, 0xf8, 0x37, 0xe7,
+	0x75, 0xea, 0x48, 0xbe, 0x01, 0x43, 0x0d, 0x79, 0xf9, 0x07, 0xdc, 0xbf, 0x65, 0x76, 0x75, 0xc8,
+	0xee, 0xe3, 0x5e, 0x4e, 0xdf, 0xc7, 0x03, 0xd2, 0x14, 0x45, 0xd4, 0x7e, 0xd0, 0xe3, 0x4f, 0x00,
+	0x00, 0x00, 0xff, 0xff, 0x2e, 0x8a, 0x77, 0x22, 0xb4, 0x01, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -187,6 +271,8 @@ const _ = grpc.SupportPackageIsVersion6
 type CalculatorServiceClient interface {
 	//unary
 	Sum(ctx context.Context, in *SumRequest, opts ...grpc.CallOption) (*SumResponse, error)
+	//we want to invalid request like negative numbers
+	SquareRoot(ctx context.Context, in *SquareRootRequest, opts ...grpc.CallOption) (*SquareRootResponse, error)
 }
 
 type calculatorServiceClient struct {
@@ -206,10 +292,21 @@ func (c *calculatorServiceClient) Sum(ctx context.Context, in *SumRequest, opts 
 	return out, nil
 }
 
+func (c *calculatorServiceClient) SquareRoot(ctx context.Context, in *SquareRootRequest, opts ...grpc.CallOption) (*SquareRootResponse, error) {
+	out := new(SquareRootResponse)
+	err := c.cc.Invoke(ctx, "/calculator.CalculatorService/SquareRoot", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // CalculatorServiceServer is the server API for CalculatorService service.
 type CalculatorServiceServer interface {
 	//unary
 	Sum(context.Context, *SumRequest) (*SumResponse, error)
+	//we want to invalid request like negative numbers
+	SquareRoot(context.Context, *SquareRootRequest) (*SquareRootResponse, error)
 }
 
 // UnimplementedCalculatorServiceServer can be embedded to have forward compatible implementations.
@@ -218,6 +315,9 @@ type UnimplementedCalculatorServiceServer struct {
 
 func (*UnimplementedCalculatorServiceServer) Sum(ctx context.Context, req *SumRequest) (*SumResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Sum not implemented")
+}
+func (*UnimplementedCalculatorServiceServer) SquareRoot(ctx context.Context, req *SquareRootRequest) (*SquareRootResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SquareRoot not implemented")
 }
 
 func RegisterCalculatorServiceServer(s *grpc.Server, srv CalculatorServiceServer) {
@@ -242,6 +342,24 @@ func _CalculatorService_Sum_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
+func _CalculatorService_SquareRoot_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SquareRootRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CalculatorServiceServer).SquareRoot(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/calculator.CalculatorService/SquareRoot",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CalculatorServiceServer).SquareRoot(ctx, req.(*SquareRootRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _CalculatorService_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "calculator.CalculatorService",
 	HandlerType: (*CalculatorServiceServer)(nil),
@@ -249,6 +367,10 @@ var _CalculatorService_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Sum",
 			Handler:    _CalculatorService_Sum_Handler,
+		},
+		{
+			MethodName: "SquareRoot",
+			Handler:    _CalculatorService_SquareRoot_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

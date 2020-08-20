@@ -6,7 +6,10 @@ import (
 	"net"
 	"fmt"
 	calculatorpb "../calculatorpb"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"google.golang.org/grpc"
+	"math"
 )
 
 type server struct {}
@@ -23,6 +26,20 @@ func (*server) Sum(ctx context.Context, req *calculatorpb.SumRequest) (*calculat
 	}
 
 	return res, nil
+}
+
+func (*server) SquareRoot(c context.Context, req *calculatorpb.SquareRootRequest) (*calculatorpb.SquareRootResponse, error) {
+	fmt.Println("Recieved SquareRoot RPC")
+	number := req.GetNumber()
+	if number < 0 {
+		return nil, status.Errorf(
+			codes.InvalidArgument,
+			fmt.Sprintf("Recieved a negative number: %v", number),
+		)
+	}
+	return &calculatorpb.SquareRootResponse{
+		NumberRoot : math.Sqrt(float64(number)),
+	}, nil
 }
 
 func main() {
