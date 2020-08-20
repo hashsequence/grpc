@@ -1,3 +1,5 @@
+Udemy Notes From https://github.com/simplesteph
+
 grpc
 ------------------
 --overview
@@ -1471,4 +1473,109 @@ func doUnaryDeadline(c greetpb.GreetServiceClient, seconds time.Duration) {
 	}
 	log.Printf("Response from GreetWithDeadline %v", res.Result)
 }
+```
+
+## SSL Security
+
+* In production gRPC calls should be running with encryption
+
+* this is done with SSL certificates
+
+* SSL secures n to n communication with no attack in the middle
+
+* when you communicate over the internet, your data is visible by all servers that transfers your packet
+
+* ssl allows clients and servers to encrypt packet
+
+* ssl allows clients and servers to secure exchange of data
+
+* routers cannot view data content of internet packets
+
+* TLS (transport layer security) , successor of ssl, encrypts the connection between 2 endpoints for secure data exchange
+
+
+* two ways of using ssl (gRPC can do both)
+	* 1-way verification ef. browser -> webserver
+	* 2-way verification eg. ssl authentication
+
+* setting up certificates
+	* server needs to generate private key
+	* ca root public certificate is used by the client to trust
+	* server sends signed ssl certificate
+	* client verify ssl certificate from server
+
+### Example of SSL Encryption in gRPC
+
+* setup a certificate authority
+
+* setup a server certificate
+
+* sign a server certificate
+
+* set up server to use tls
+
+* setup client to securely connect over tls
+
+* for the tsl option we can use oppenssl to generate keys and certificates
+
+* https://grpc.io/docs/guides/auth/
+
+* https://medium.com/utility-warehouse-technology/grpc-client-authentication-bf899ac8ada8
+
+* https://bbengfort.github.io/programmer/2017/03/03/secure-grpc.html
+server:
+
+```go
+lis, err := net.Listen("tcp", "0.0.0.0:50051")
+	if err != nil {
+		log.Fatalf("Failed to listen: %v", err)
+	}
+
+	opts := []grpc.ServerOption{}
+	tls := false
+	if tls {
+		certFile := "ssl/server.crt"
+		keyFile := "ssl/server.pem"
+		creds, sslErr := credentials.NewServerTLSFromFile(certFile, keyFile)
+		if sslErr != nil {
+			log.Fatalf("Failed loading certificates: %v", sslErr)
+			return
+		}
+		opts = append(opts, grpc.Creds(creds))
+	}
+
+	s := grpc.NewServer(opts...)
+	greetpb.RegisterGreetServiceServer(s, &server{})
+
+	if err := s.Serve(lis); err != nil {
+		log.Fatalf("failed to serve: %v", err)
+	}
+
+```
+
+client :
+
+```go
+	tls := true
+	opts := grpc.WithInsecure()
+	if tls {
+		certFile := "ssl/ca.crt" // Certificate Authority Trust certificate
+		creds, sslErr := credentials.NewClientTLSFromFile(certFile, "")
+		if sslErr != nil {
+			log.Fatalf("Error while loading CA trust certificate: %v", sslErr)
+			return
+		}
+		opts = grpc.WithTransportCredentials(creds)
+	}
+
+	cc, err := grpc.Dial("localhost:50051", opts)
+	if err != nil {
+		log.Fatalf("could not connect: %v", err)
+	}
+	defer cc.Close()
+
+	c := greetpb.NewGreetServiceClient(cc)
+	// fmt.Printf("Created client: %f", c)
+
+	doUnary(c)
 ```
